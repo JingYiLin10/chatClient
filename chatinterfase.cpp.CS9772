@@ -1,0 +1,409 @@
+#include "chatinterfase.h"
+
+CharInterfase::CharInterfase(QWidget *parent) : QWidget(parent)
+{   //对象创建
+    this->createChatInterfaseObj();
+    this->createChatListObj();
+    this->createMainObj();
+
+    //子页面风格与布局
+    this->setChatInterfaseAttributes();
+    this->setChatInterfaseLayout();
+    this->setChatListsAttributes();
+    this->setChatListsLayout();
+
+    //主页面风格与布局
+    this->setWindowControlsAttributes(Qt::FramelessWindowHint|Qt::WindowMinimizeButtonHint,906,602);
+    this->setWindowControlsLayout();
+    this->setStackedLayoutAttributes();
+
+
+    //后期整理信号槽
+    connect(closeBtn,QPushButton::clicked, this, QWidget::close);
+    connect(chatInterfaseBtn, QPushButton::clicked, this, chat_List_SwitchPage);
+    connect(listInfoBtn, QPushButton::clicked, this, chat_List_SwitchPage);
+
+    //发送按钮
+    connect(sendBtn,QPushButton::clicked,this,createChatInfo);
+    //1页信号槽
+
+}
+
+CharInterfase::~CharInterfase()
+{
+
+}
+
+//------------------slot--------------
+void CharInterfase::chat_List_SwitchPage()  //stackedLayout 切换页面
+{
+    //调用sender()函数返回信号发送对象
+    QPushButton *senderBtn = qobject_cast<QPushButton *>(sender());
+    int nIndex = chat_List_StackLayout->currentIndex();
+    if(senderBtn == chatInterfaseBtn && nIndex == 1){ //页面1
+        nIndex = 0;
+    }
+    else if(senderBtn == listInfoBtn && nIndex == 0){ //页面2
+        nIndex = 1;
+    }
+    chat_List_StackLayout->setCurrentIndex(nIndex);
+}
+
+void CharInterfase::addRecentItem()
+{
+    QListWidgetItem *recentObj = new QListWidgetItem(QPixmap("C:\\Users\\wjingbo\\Desktop\\GraduationProject\\img\\tencentIcon.png"), "jingbo");
+    recentChatList->addItem(recentObj);
+    //QString recentObjStyle = "QListWidgetItem{height:60px;}";
+    chat_List_StackLayout->setCurrentIndex(0);
+
+}
+
+//增加好友
+void CharInterfase::addFriendItem()
+{
+    QToolButton *friendBtn1 = new QToolButton;
+    friendBtn1->setText(tr("hello world"));
+    friendBtn1->setIcon(QPixmap("C:\\Users\\wjingbo\\Desktop\\GraduationProject\\img\\tencentIcon.png"));
+    friendBtn1->setIconSize(QSize(36,36));
+    friendBtn1->setAutoRaise(true);
+    friendBtn1->setFixedSize(198,60);
+}
+
+void CharInterfase::createChatInfo()
+{
+    QString string = chatText->toPlainText();
+    if(string != ""){
+
+        QHBoxLayout *chatRecordItem = new QHBoxLayout;
+        QLabel *recordItem = new QLabel;
+        recordItem->setText(QString(string));
+        recordItem->setAlignment(Qt::AlignCenter);
+        recordItem->setAlignment(Qt::AlignVCenter);
+        recordItem->setMinimumWidth(20);
+        recordItem->setMaximumWidth(550);
+        recordItem->setMinimumHeight(30);
+        chatText->setText(QString(""));
+        QString chatTextStyle = "QLabel{padding:6px; color:white;  border-top-left-radius:10px; font:13px;  border-top-right-radius: 10px; border-bottom-left-radius:10px; background:#2683F5;}";
+        recordItem->setStyleSheet(chatTextStyle);
+        chatRecordItem->addStretch();
+        chatRecordItem->addWidget(recordItem);
+
+        qDebug() << chatMessCount<<"/"<<chatMessRmIndex;
+
+        chatMessLayoutArr[chatMessCount] = chatRecordItem;
+        if(chatMessCount == 7){
+            chatRecordLayout->removeItem(chatMessLayoutArr[chatMessRmIndex]);
+
+            if(chatMessRmIndex == 7){
+                chatMessRmIndex = 0;
+            }
+            else{
+                chatMessRmIndex += 1;
+            }
+        }
+        else{
+            chatMessCount += 1;
+        }
+        chatRecordLayout->addLayout(chatRecordItem);
+    }
+
+}
+//------------------slot--------------
+
+//--------------主界面相关函数-----------
+void CharInterfase::createMainObj() //主界面对象生成
+{
+    chatNav = new QWidget;
+    listInfoBtn = new QPushButton;
+    chatInterfaseBtn = new QPushButton;
+    miniBtn = new QPushButton;
+    maxBtn = new QPushButton;
+    closeBtn = new QPushButton;
+    chat_List_StackLayout = new QStackedLayout;
+    //Layout
+    mainLayout = new QVBoxLayout;
+    navLayout = new QHBoxLayout;
+}
+
+//主界面设置显示风格属性
+void CharInterfase::setWindowControlsAttributes(Qt::WindowFlags type, int width, int height)
+{
+
+    this->setWindowFlags(type);
+    this->resize(width, height);
+    chatNav->setFixedSize(906,56);//适当取值56-58
+
+    QPalette pal;
+    QString imgname = "C:\\Users\\wjingbo\\Desktop\\GraduationProject\\img\\chatInterfaseTitle.png";
+    QPixmap pixmap(imgname);
+    pal.setBrush(QPalette::Background, QBrush(pixmap));
+    this->setPalette(pal);
+
+    miniBtn->setFixedSize(22,22);
+    miniBtn->setText(tr("—"));
+    QString miniStyle = "QPushButton{color:#96A0D3;font-family:黑体;background:transparent;font-weight:bold;}QPushButton:hover{color:white;}";
+    miniBtn->setStyleSheet(miniStyle);
+    maxBtn->setFixedSize(22,22);
+    maxBtn->setText(tr("O"));
+    QString maxStyle = "QPushButton{color:#96A0D3;font-family:黑体;background:transparent;font-size:18px;}QPushButton:hover{color:white;}";
+    maxBtn->setStyleSheet(maxStyle);
+    closeBtn->setFixedSize(22,22);
+    closeBtn->setText(tr("X"));
+    QString closeStyle = "QPushButton{color:#96A0D3;font-family:黑体;background:transparent;font-size:18px;}QPushButton:hover{color:white;}";
+    closeBtn->setStyleSheet(closeStyle);
+    chatInterfaseBtn->setFixedSize(30,30);
+    chatInterfaseBtn->setText(tr("1"));
+    QString chatInterfaseBtnStyle = "QPushButton{background:transparent;}";
+    chatInterfaseBtn->setStyleSheet(chatInterfaseBtnStyle);
+    chatInterfaseBtn->setIcon(QIcon("C:\\Users\\wjingbo\\Desktop\\GraduationProject\\img\\infoIcon.png"));
+    chatInterfaseBtn->setIconSize(QSize(30,30));
+    listInfoBtn->setFixedSize(30,30);
+    //listInfoBtn->setText(tr("2"));
+    QString listInfoBtnStyle = "QPushButton{background:transparent;}";
+    listInfoBtn->setStyleSheet(listInfoBtnStyle);
+    listInfoBtn->setIcon(QIcon("C:\\Users\\wjingbo\\Desktop\\GraduationProject\\img\\ListIcon.png"));
+    listInfoBtn->setIconSize(QSize(30,30));
+
+}
+
+//主页面设置布局
+void CharInterfase::setWindowControlsLayout()
+{
+    //标题导航栏
+    navLayout->addStretch(340); //310
+    navLayout->addWidget(chatInterfaseBtn);
+    navLayout->addStretch(30);
+    navLayout->addWidget(listInfoBtn);
+    navLayout->addStretch(280);//310
+    navLayout->addWidget(miniBtn);
+    navLayout->addWidget(maxBtn);
+    navLayout->addWidget(closeBtn);
+    navLayout->setSpacing(5);
+    navLayout->setMargin(10);
+    chatNav->setLayout(navLayout);
+    //stackedLayout
+    chat_List_StackLayout->addWidget(chatInterfasePage);
+    chat_List_StackLayout->addWidget(addFriendPage);
+    chat_List_StackLayout->setSpacing(0);
+
+    //主布局
+    mainLayout->addWidget(chatNav);
+    //mainLayout->addStretch();
+    mainLayout->addLayout(chat_List_StackLayout);
+    mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    this->setLayout(mainLayout);
+
+}
+
+//设置主页面stackedLayout属性
+void CharInterfase::setStackedLayoutAttributes()
+{
+    addFriendPage->setFixedSize(906,546);
+    addFriendPage->setLayout(addFriendMainLayout);
+    chatInterfasePage->setFixedSize(906,546);
+    chatInterfasePage->setLayout(chatInterfaseMainLayout);
+    chat_List_StackLayout->setCurrentIndex(0);
+}
+//--------------主界面相关函数-----------
+
+
+
+//---------------1页相关函数------------
+void CharInterfase::createChatInterfaseObj()    //1页对象生成
+{
+    chatMessCount = 0;
+    chatMessRmIndex = 0;
+    recentChatList = new QListWidget;
+    chatObjName = new QLabel;
+    chatInterfasePage = new QWidget;
+    chatText = new QTextEdit;
+    chatRecord = new QWidget;
+    sendBtn = new QPushButton;
+
+    chatRecordLayout = new QVBoxLayout;
+    recentChatLayout = new QVBoxLayout;
+    chatWinTitleLayout = new QHBoxLayout;
+    chatWinSendLayout = new QHBoxLayout;
+    chatWinLayout = new QVBoxLayout;
+    chatInterfaseMainLayout = new QHBoxLayout;
+}
+
+//1页属性设置
+void CharInterfase::setChatInterfaseAttributes()
+{
+    QString chatInterfasePageStyle = "QWidget{background:white;}";
+    chatInterfasePage->setStyleSheet(chatInterfasePageStyle);
+
+    recentChatList->setFixedWidth(200);
+    recentChatList->setIconSize(QSize(40,40));
+    QString recentChatListStyle = "QListWidget{background:#FAFAFA; border:none; outline:0px;}"
+                                  "QListWidget::item:selected{background:#EBEBEC; color:black;}"
+                                  "QListWidget::item:hover{background:#EBEBEC;}"
+                                  "QListWidget::item{height:60px;}";
+    recentChatList->setStyleSheet(recentChatListStyle);
+    chatRecord->setFixedHeight(375);
+    chatRecord->setLayout(chatRecordLayout);
+    QString chatRecordStyle = "";
+
+    chatRecord->setStyleSheet(chatRecordStyle);
+
+
+    //-------------------
+    chatObjName->setText(tr("Title"));
+    QString chatObjNameStyle = "QLabel{font:18px; color:black; font-family:黑体;}";
+    chatObjName->setStyleSheet(chatObjNameStyle);
+
+    chatText->setFixedHeight(92);
+    chatText->verticalScrollBar()->hide();
+    QString chatTextStyle = "QTextEdit{ font:14px; font-family:宋体; border-left:1px; border-right:1px;}";
+    chatText->setStyleSheet(chatTextStyle);
+
+    sendBtn->setText(tr("发送"));
+    sendBtn->setFixedSize(65,25);
+    QString sendBtnStyle = "QPushButton {background:#00A3FF; border-radius:2px; color:white;}"
+                           "QPushButton:hover {background:#2AB9F8;}";
+    sendBtn->setStyleSheet(sendBtnStyle);
+
+}
+
+//1页页面布局
+void CharInterfase::setChatInterfaseLayout()
+{
+    chatRecordLayout->addStretch();
+    chatRecordLayout->setMargin(25);
+    chatRecordLayout->setSpacing(12);
+
+    recentChatLayout->setMargin(0);
+    recentChatLayout->setSpacing(0);
+    recentChatLayout->addWidget(recentChatList);
+
+    chatWinTitleLayout->setMargin(15);
+    chatWinTitleLayout->setSpacing(0);
+    chatWinTitleLayout->addWidget(chatObjName);
+
+    chatWinSendLayout->setMargin(0);
+    chatWinSendLayout->setSpacing(0);
+    chatWinSendLayout->setContentsMargins(0,0,14,15);
+    chatWinSendLayout->addStretch();
+    chatWinSendLayout->addWidget(sendBtn);
+
+    chatWinLayout->setMargin(0);
+    chatWinLayout->setSpacing(0);
+    chatWinLayout->addLayout(chatWinTitleLayout);
+    chatWinLayout->addWidget(chatRecord);
+    chatWinLayout->addWidget(chatText);
+    chatWinLayout->addLayout(chatWinSendLayout);
+
+    chatInterfaseMainLayout->setSpacing(0);
+    chatInterfaseMainLayout->setMargin(0);
+    chatInterfaseMainLayout->addWidget(recentChatList);
+    chatInterfaseMainLayout->addLayout(chatWinLayout);
+
+}
+
+
+
+//---------------1页相关函数------------
+
+//---------------2页相关函数------------
+void CharInterfase::createChatListObj() //2页对象生成
+{
+    addFriendPage = new QWidget;
+    titleBg = new QLabel;
+    findLine = new QLineEdit;
+    findBtn = new QPushButton;
+    middleWidget = new QWidget;
+
+    findLayout = new QHBoxLayout;
+    middleLayout = new QVBoxLayout;
+    addFriendMainLayout = new QHBoxLayout;
+    addFriendMainLayout1 = new QVBoxLayout;
+}
+
+//设置列表页风格
+void CharInterfase::setChatListsAttributes()
+{
+    //addFriendPage->setLayout(addFriendMainLayout);
+
+    titleBg->setFixedSize(620,6);
+    QString titleBgStyle = "QLabel{background:#118DEE; border-top-left-radius:4px; border-top-right-radius:4px;}";
+    titleBg->setStyleSheet(titleBgStyle);
+
+    QString findLineStyle = "QLineEdit{border:1 solid gary; width:450px; height:30px; border-radius:15px;}";
+    findLine->setStyleSheet(findLineStyle);
+    findBtn->setText(tr("查找"));
+    QString findBtnStyle = "QPushButton{background:#0188FB; height:28px; width:65px; border-radius:3px; color:white;}"
+                           "QPushButton:hover{background:#289CFF;}";
+    findBtn->setStyleSheet(findBtnStyle);
+
+    middleWidget->setFixedSize(620,180);//202
+    middleWidget->setMinimumHeight(202);
+    QString middleWidgetStyle = "QWidget{background:white; border-top-left-radius:4px; border-top-right-radius:4px;}";
+    middleWidget->setStyleSheet(middleWidgetStyle);
+    middleWidget->setLayout(middleLayout);
+    QString addFriendPageStyle = "QWidget{background:#FAFAFA;}";
+    addFriendPage->setStyleSheet(addFriendPageStyle);
+
+
+}
+
+//设置列表页布局
+void CharInterfase::setChatListsLayout()
+{
+    findLayout->setSpacing(15);
+    findLayout->addStretch();
+    findLayout->addWidget(findLine);
+    findLayout->addWidget(findBtn);
+    findLayout->addStretch();
+
+    middleLayout->setMargin(0);
+    middleLayout->setSpacing(0);
+    middleLayout->addWidget(titleBg);
+    middleLayout->addStretch();
+    middleLayout->addLayout(findLayout);
+    middleLayout->addStretch();
+
+    addFriendMainLayout1->addStretch(1);
+    addFriendMainLayout1->addWidget(middleWidget);
+    addFriendMainLayout1->addStretch(3);
+    addFriendMainLayout->addStretch();
+    addFriendMainLayout->addLayout(addFriendMainLayout1);
+    addFriendMainLayout->addStretch();
+
+}
+//增加好友函数
+QToolButton *CharInterfase::getFriendItemObj()
+{
+
+}
+//---------------2页相关函数------------
+
+//聊天界面鼠标事件
+void CharInterfase::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton){
+        pressFlag = true;
+        beginPos = event->pos();
+    }
+    QWidget::mousePressEvent(event);
+}
+
+void CharInterfase::mouseMoveEvent(QMouseEvent *event)
+{
+    if(pressFlag){
+        QPoint relPos(QCursor::pos() - beginPos);
+        move(relPos);
+    }
+    QWidget::mouseMoveEvent(event);
+}
+
+void CharInterfase::mouseReleaseEvent(QMouseEvent *event)
+{
+    pressFlag = false;
+    QWidget::mouseReleaseEvent(event);
+}
+
+//void QWidget::mouseDoubleClickEvent(QMouseEvent *event){
+
+//}
