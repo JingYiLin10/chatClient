@@ -28,7 +28,7 @@ CharInterfase::CharInterfase(User user, QWidget *parent) : QWidget(parent)
     connect(sendBtn,QPushButton::clicked,this,createChatInfo1);
     connect(middleFindBtn, QPushButton::clicked, this, findFriendSlot);
     connect(newFriendAddBtn, QPushButton::clicked, this, addFriend);
-    connect(recentChatList,SIGNAL(itemActivated(QListWidgetItem*)), this,SLOT(setChatObj(QListWidgetItem*)));
+    connect(recentChatList,SIGNAL(itemActivated(QListWidgetItem*)), this,SLOT(addChatInfo(QListWidgetItem*)));
 }
 
 CharInterfase::~CharInterfase()
@@ -142,6 +142,7 @@ void CharInterfase:: readMessHandle()
         lookWorldImg->hide();
     }
 }
+
 
 //---------------------------------------------------------
 
